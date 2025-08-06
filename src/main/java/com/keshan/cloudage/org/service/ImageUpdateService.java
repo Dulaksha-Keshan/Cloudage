@@ -1,0 +1,31 @@
+package com.keshan.cloudage.org.service;
+
+
+import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+
+import java.util.logging.Logger;
+
+@Component
+@AllArgsConstructor
+public class ImageUpdateService {
+
+    private S3UploadService s3UploadService;
+
+    private  final Logger logger = Logger.getLogger(ImageUpdateService.class.getName());
+
+    @Scheduled(fixedRate = 600000 )
+    public void autoUpdate(){
+        try{
+            logger.info("Updating image status........");
+            s3UploadService.updateUploadStatusAll();
+        }catch (Exception e){
+            logger.warning(e.getMessage());
+        }finally {
+            logger.info("Updating completed......");
+        }
+
+    }
+}

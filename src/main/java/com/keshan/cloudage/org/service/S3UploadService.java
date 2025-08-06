@@ -43,7 +43,13 @@ public class S3UploadService {
                         ))
                 .build();
         this.imageRepository = imageRepository;
-        this.s3Client = S3Client.builder().region(Region.of(awsConfig.getRegion().getStatic_())).build();
+        this.s3Client = S3Client.builder().region(Region.of(awsConfig.getRegion().getStatic_()))
+                .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(
+                                awsConfig.getCredentials().getAccessKey(),
+                                awsConfig.getCredentials().getSecretKey()
+                        )
+                ))
+                .build();
     }
 
     public URL  generatePutObjectUrl (String objectKey , String fileName){
@@ -95,5 +101,33 @@ public class S3UploadService {
     //have to figure out how to pass the object since the object key is not being passed to the front end maybe use a json with few key values for the url,s3Key
 
 
+
+    public void updateUploadStatusAll(){
+
+        try{
+            imageRepository.findAllByStatus(STATUS.PENDING).parallelStream().forEach(
+                    image -> {
+                        HeadObjectRequest request = HeadObjectRequest.builder()
+                                .bucket(bucket)
+                                .key(image.getS3Key())
+                                .build();
+                        try{
+                            s3Client.headObject(request);
+
+                            image.setStatus(STATUS.COMPLETED);
+
+                        }catch (NoSuchKeyException ex){
+                            image.setStatus(STATUS.FAILED);
+                            logger.warning("S3 object not found or error: " + ex.awsErrorDetails().errorMessage());
+                        }
+                        imageRepository.save(image);
+                    }
+            );
+        }catch (Exception e){
+            logger.warning(e.getMessage());
+        }
+
+
+    }
 
 }
