@@ -3,11 +3,8 @@ package com.keshan.cloudage.org.service;
 import com.keshan.cloudage.org.model.Image;
 import com.keshan.cloudage.org.model.STATUS;
 import com.keshan.cloudage.org.repository.ImageRepository;
-import com.keshan.cloudage.org.util.AWSConfig;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
-import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
-import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
@@ -28,28 +25,24 @@ public class S3UploadService {
     private final ImageRepository imageRepository;
     private final S3Client s3Client;
     private final Logger logger = Logger.getLogger(S3UploadService.class.getName());
-    public S3UploadService(
-            AWSConfig awsConfig,
-            ImageRepository imageRepository
-    ) {
 
-        this.bucket = awsConfig.getS3().getBucket();
-        this.presigner = S3Presigner.builder()
-                .region(Region.of(awsConfig.getRegion().getStatic_()))
-                .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(
-                        awsConfig.getCredentials().getAccessKey(),
-                        awsConfig.getCredentials().getSecretKey()
-                )
-                        ))
-                .build();
+
+    public S3UploadService(
+            S3Client s3Client,
+
+            S3Presigner presigner,
+
+            ImageRepository imageRepository,
+
+            @Value("${aws-settings.s3-bucket}") String bucket
+    ) {
+        this.s3Client = s3Client;
+        this.presigner = presigner;
         this.imageRepository = imageRepository;
-        this.s3Client = S3Client.builder().region(Region.of(awsConfig.getRegion().getStatic_()))
-                .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(
-                                awsConfig.getCredentials().getAccessKey(),
-                                awsConfig.getCredentials().getSecretKey()
-                        )
-                ))
-                .build();
+        this.bucket = bucket;
+
+        logger.info("S3UploadService initialized successfully with auto-configured clients.");
+        logger.info("Target S3 Bucket: " + this.bucket);
     }
 
     public URL  generatePutObjectUrl (String objectKey , String fileName){
@@ -77,28 +70,28 @@ public class S3UploadService {
 
     }
 
-    public boolean updateUploadStatus(String objectKey){
-
-        HeadObjectRequest request = HeadObjectRequest.builder()
-                .bucket(bucket)
-                .key(objectKey)
-                .build();
-
-        try {
-            s3Client.headObject(request);
-            return imageRepository.findByS3Key(objectKey).map(image -> {
-                image.setStatus(STATUS.COMPLETED);
-                imageRepository.save(image);
-                return true;
-            }).orElse(false);
-
-        }catch (S3Exception exception){
-            logger.warning("S3 object not found or error: " + exception.awsErrorDetails().errorMessage());
-            return false;
-        }
-
-    }// this is for the upload checker on the same upload controller frontend has to send a request to upload after success
-    //have to figure out how to pass the object since the object key is not being passed to the front end maybe use a json with few key values for the url,s3Key
+//    public boolean updateUploadStatus(String objectKey){
+//
+//        HeadObjectRequest request = HeadObjectRequest.builder()
+//                .bucket(bucket)
+//                .key(objectKey)
+//                .build();
+//
+//        try {
+//            s3Client.headObject(request);
+//            return imageRepository.findByS3Key(objectKey).map(image -> {
+//                image.setStatus(STATUS.COMPLETED);
+//                imageRepository.save(image);
+//                return true;
+//            }).orElse(false);
+//
+//        }catch (S3Exception exception){
+//            logger.warning("S3 object not found or error: " + exception.awsErrorDetails().errorMessage());
+//            return false;
+//        }
+//
+//    }// this is for the upload checker on the same upload controller frontend has to send a request to upload after success
+//    //have to figure out how to pass the object since the object key is not being passed to the front end maybe use a json with few key values for the url,s3Key
 
 
 

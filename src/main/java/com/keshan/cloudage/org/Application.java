@@ -1,6 +1,5 @@
 package com.keshan.cloudage.org;
 
-import com.keshan.cloudage.org.util.AWSConfig;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableScheduling;
