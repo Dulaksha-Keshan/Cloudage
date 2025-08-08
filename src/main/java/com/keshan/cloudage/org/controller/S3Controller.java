@@ -1,15 +1,16 @@
 package com.keshan.cloudage.org.controller;
 
 
-import com.keshan.cloudage.org.model.Image;
 import com.keshan.cloudage.org.service.S3DownloadService;
 import com.keshan.cloudage.org.service.S3UploadService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import software.amazon.awssdk.services.s3.endpoints.internal.Value;
 
 import java.net.URL;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController()
@@ -39,11 +40,11 @@ public class S3Controller {
 //    }
 
     @GetMapping("get-images")//TODO add path variable later
-    public ResponseEntity<List<String>> userS3Keys(
+    public ResponseEntity<Map<String,String>> userS3Keys(
             //TODO the path variable for the user id will go here later when users are create
     ){
         try{
-            List<String> linkList = s3DownloadService.userImagesLinkList();
+            Map<String,String> linkList = s3DownloadService.userImageList();
             return ResponseEntity.ok(linkList);
         } catch (Exception e) {
 
