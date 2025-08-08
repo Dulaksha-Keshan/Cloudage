@@ -6,7 +6,6 @@ import com.keshan.cloudage.org.service.S3UploadService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import software.amazon.awssdk.services.s3.endpoints.internal.Value;
 
 import java.net.URL;
 import java.util.List;
@@ -24,14 +23,21 @@ public class S3Controller {
 
     @GetMapping("upload-req/{fileName}")
     public ResponseEntity<String> getUploadUrl(
-            @PathVariable("fileName") String fileName
-            ){
+            @PathVariable("fileName") String fileName,
+            @RequestParam String type
+    ) {
 
-         String objectKey = "images/"+ fileName + UUID.randomUUID();
-         URL uploadUrl = s3UploadService.generatePutObjectUrl(objectKey,fileName);
+        List<String> allowedTypes = List.of("image/jpeg", "image/png", "image/webp");
+
+        if (!allowedTypes.contains(type)) {
+            return ResponseEntity.badRequest().body("Invalid file type");
+        }
+
+        String objectKey = "images/" + UUID.randomUUID() + fileName;
+        URL uploadUrl = s3UploadService.generatePutObjectUrl(objectKey, fileName, type);
 
 
-         return ResponseEntity.ok(uploadUrl.toString());
+        return ResponseEntity.ok(uploadUrl.toString());
     }
 
 //    @PostMapping("upload-confirm")
@@ -40,15 +46,17 @@ public class S3Controller {
 //    }
 
     @GetMapping("get-images")//TODO add path variable later
-    public ResponseEntity<Map<String,String>> userS3Keys(
+    public ResponseEntity<Map<String, String>> userS3Keys(
             //TODO the path variable for the user id will go here later when users are create
-    ){
-        try{
-            Map<String,String> linkList = s3DownloadService.userImageList();
+    ) {
+        try {
+            Map<String, String> linkList = s3DownloadService.userImageList();
             return ResponseEntity.ok(linkList);
         } catch (Exception e) {
 
             return ResponseEntity.internalServerError().build();
         }
     }
+
+//    @GetMapping("u")
 }

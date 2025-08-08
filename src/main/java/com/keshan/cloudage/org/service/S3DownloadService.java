@@ -54,7 +54,7 @@ public class S3DownloadService {
                 .orElse(Collections.emptyList())
                 .stream()
                 .collect(Collectors
-                        .toMap(image -> UUID.randomUUID()+"."+image.getOriginalFileName(),image -> "https://" + bucket + ".s3.amazonaws.com/" + image.getS3Key()));
+                        .toMap(image -> UUID.randomUUID()+"_"+image.getOriginalFileName(),image -> "https://" + bucket + ".s3.amazonaws.com/" + image.getS3Key()));
 
 
 

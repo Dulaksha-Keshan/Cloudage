@@ -44,11 +44,12 @@ public class S3UploadService {
         logger.info("Target S3 Bucket: " + this.bucket);
     }
 
-    public URL  generatePutObjectUrl (String objectKey , String fileName){
+    public URL  generatePutObjectUrl (String objectKey , String fileName, String type){
 
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                 .bucket(bucket)
                 .key(objectKey)
+                .contentType(type)
                 .build();
 
 
@@ -119,6 +120,10 @@ public class S3UploadService {
             logger.warning(e.getMessage());
         }
 
+
+    }
+
+    public void updateUploadStatus(String s3key){
 
     }
 
