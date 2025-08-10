@@ -70,8 +70,9 @@ public class EditService {
 
         ImageWriteParam defaultParams = imageWriter.getDefaultWriteParam();
 
-        try(ByteArrayOutputStream baos = new ByteArrayOutputStream(image.getHeight()*image.getWidth()*4)){
+        try(ByteArrayOutputStream baos = new ByteArrayOutputStream(image.getHeight()*image.getWidth()*7)){
 
+            logger.info("Image size :" + (image.getHeight()*image.getWidth()*7));
             ImageOutputStream IOS = ImageIO.createImageOutputStream(baos);
 
             imageWriter.setOutput(IOS);
