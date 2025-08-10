@@ -29,14 +29,14 @@ public class S3Controller {
             @RequestParam String type
     ) {
 
-        List<String> allowedTypes = Arrays.stream(ITYPE.values()).map(ITYPE::getImageType).toList();
+        List<String> allowedTypes = Arrays.stream(ITYPE.values()).map(ITYPE::getMIME).toList();
 
         if (!allowedTypes.contains(type)) {
             return ResponseEntity.badRequest().body("Invalid file type");
         }
 
-        String objectKey = "images/" + UUID.randomUUID() + fileName;
-        URL uploadUrl = s3UploadService.generatePutObjectUrl(objectKey, fileName, type);
+        String objectKey = "images/" + UUID.randomUUID()+"_" + fileName;
+        URL uploadUrl = s3UploadService.generatePutObjectUrl(objectKey, fileName,type);
 
 
         return ResponseEntity.ok(uploadUrl.toString());
@@ -59,6 +59,7 @@ public class S3Controller {
             return ResponseEntity.internalServerError().build();
         }
     }
+
 
 //    @GetMapping("u")
 }

@@ -5,10 +5,11 @@ import com.keshan.cloudage.org.model.STATUS;
 import com.keshan.cloudage.org.repository.ImageRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 
-import java.net.URL;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -54,7 +55,7 @@ public class S3DownloadService {
                 .orElse(Collections.emptyList())
                 .stream()
                 .collect(Collectors
-                        .toMap(image -> UUID.randomUUID()+"_"+image.getOriginalFileName(),image -> "https://" + bucket + ".s3.amazonaws.com/" + image.getS3Key()));
+                        .toMap(Image::getS3Key, image -> "https://" + bucket + ".s3.amazonaws.com/" + image.getS3Key()));
 
 
 

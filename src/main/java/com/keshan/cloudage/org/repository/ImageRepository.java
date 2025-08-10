@@ -13,4 +13,6 @@ public interface ImageRepository extends JpaRepository<Image,String> {
     Optional<Image> findByS3Key(String objectKey);
 
     List<Image> findAllByStatus(STATUS status);
+
+    Optional<Image> findByS3KeyAndStatus(String s3Key, STATUS status);
 }

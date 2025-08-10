@@ -64,7 +64,7 @@ public class S3UploadService {
             image.setStatus(STATUS.PENDING);
             image.setS3Key(objectKey);
             image.setOriginalFileName(fileName);
-            image.setImageType(ITYPE.valueOf(type.split("/")[1].toUpperCase()));
+            image.setOriginalFormat(ITYPE.fromMIME(type).getFormat());
             imageRepository.save(image);
         }
 

@@ -20,8 +20,8 @@ public class Image {
 
     private String s3Key ;
 
-    @Enumerated(EnumType.STRING)
-    private ITYPE imageType;
+
+    private String originalFormat;
 
     private STATUS status;
 
