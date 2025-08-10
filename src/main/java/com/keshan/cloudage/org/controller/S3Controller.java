@@ -1,6 +1,7 @@
 package com.keshan.cloudage.org.controller;
 
 
+import com.keshan.cloudage.org.model.ITYPE;
 import com.keshan.cloudage.org.service.S3DownloadService;
 import com.keshan.cloudage.org.service.S3UploadService;
 import lombok.AllArgsConstructor;
@@ -8,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URL;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -27,7 +29,7 @@ public class S3Controller {
             @RequestParam String type
     ) {
 
-        List<String> allowedTypes = List.of("image/jpeg", "image/png", "image/webp");
+        List<String> allowedTypes = Arrays.stream(ITYPE.values()).map(ITYPE::getImageType).toList();
 
         if (!allowedTypes.contains(type)) {
             return ResponseEntity.badRequest().body("Invalid file type");

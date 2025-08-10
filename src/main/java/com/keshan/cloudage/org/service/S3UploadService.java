@@ -1,5 +1,6 @@
 package com.keshan.cloudage.org.service;
 
+import com.keshan.cloudage.org.model.ITYPE;
 import com.keshan.cloudage.org.model.Image;
 import com.keshan.cloudage.org.model.STATUS;
 import com.keshan.cloudage.org.repository.ImageRepository;
@@ -63,6 +64,7 @@ public class S3UploadService {
             image.setStatus(STATUS.PENDING);
             image.setS3Key(objectKey);
             image.setOriginalFileName(fileName);
+            image.setImageType(ITYPE.valueOf(type.split("/")[1].toUpperCase()));
             imageRepository.save(image);
         }
 
