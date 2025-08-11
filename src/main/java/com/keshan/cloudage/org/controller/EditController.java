@@ -36,13 +36,27 @@ public class EditController {
         try {
             BufferedImage image = editService.retrieveImage(s3key);
 
-            byte[] imageBytes = editService.imageConversion(image,format);
+            byte[] imageBytes = editService.imageConversionToFormat(image,format);
             return ResponseEntity.ok().contentType(MediaType.valueOf(ITYPE.fromFormat(format).getMIME())).body(imageBytes);
 
         } catch (IOException e) {
             return ResponseEntity.internalServerError().body(e.getMessage());
         }
 
+
+    }
+
+    @GetMapping("formatChange/ascii")
+    public ResponseEntity<String> formatChangeASCII(
+            @RequestParam String s3key
+    ){
+        try{
+            byte[] imageBytes = editService.retrieveImageAsBytes(s3key);
+
+            return ResponseEntity.ok(editService.imageConversionToASCII(imageBytes));
+        } catch (IOException e) {
+           return ResponseEntity.internalServerError().body(e.getMessage());
+        }
 
     }
 

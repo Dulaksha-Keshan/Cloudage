@@ -6,6 +6,7 @@ import com.keshan.cloudage.org.model.STATUS;
 import com.keshan.cloudage.org.repository.ImageRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import software.amazon.awssdk.core.ResponseBytes;
 import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
@@ -20,6 +21,7 @@ import javax.imageio.stream.ImageOutputStream;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Base64;
 import java.util.logging.Logger;
 
 @Service
@@ -58,7 +60,7 @@ public class EditService {
 //    public String
 
 
-    public byte[] imageConversion (BufferedImage image , String format) throws IOException {
+    public byte[] imageConversionToFormat (BufferedImage image , String format) throws IOException {
 
 //        ByteArrayOutputStream baos = new ByteArrayOutputStream( );
 //
@@ -70,9 +72,9 @@ public class EditService {
 
         ImageWriteParam defaultParams = imageWriter.getDefaultWriteParam();
 
-        try(ByteArrayOutputStream baos = new ByteArrayOutputStream(image.getHeight()*image.getWidth()*7)){
+        try(ByteArrayOutputStream baos = new ByteArrayOutputStream(image.getHeight()*image.getWidth()*5)){
 
-            logger.info("Image size :" + (image.getHeight()*image.getWidth()*7));
+//            logger.info("Image size :" + (image.getHeight()*image.getWidth()*7));
             ImageOutputStream IOS = ImageIO.createImageOutputStream(baos);
 
             imageWriter.setOutput(IOS);
@@ -91,6 +93,16 @@ public class EditService {
 
     }
 
+//TODO make this return a html embedded ready response
+//    data:image/[image_format];base64,[Base64_encoded_string] like this
+    public String imageConversionToASCII (byte[] imageBytes ) throws IOException {
+
+        return Base64.getEncoder().encodeToString(imageBytes);
+
+    }
+
+
+
     public BufferedImage retrieveImage (String s3Key) throws IOException {
 
         try {
@@ -108,6 +120,29 @@ public class EditService {
             logger.warning(exception.getMessage());
         }
         return null;
+    }
+
+
+
+    public byte[] retrieveImageAsBytes (String s3Key) throws IOException {
+
+        try {
+            String confirmedKey = imageRepository.findByS3KeyAndStatus(s3Key, STATUS.COMPLETED).orElseThrow(() -> new IOException("No image found for key: " + s3Key)).getS3Key();
+
+            GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+                    .bucket(bucket)
+                    .key(confirmedKey)
+                    .build();
+
+
+            ResponseBytes<GetObjectResponse> s3imageBytes = s3Client.getObjectAsBytes(getObjectRequest);
+            return s3imageBytes.asByteArray();
+
+        }catch (IOException exception){
+            logger.warning(exception.getMessage());
+            throw new IOException("Error retrieving image from S3");
+        }
+
     }
 
 
