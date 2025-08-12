@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
@@ -28,13 +29,16 @@ public class EditController {
             @RequestParam String format
     ) throws IOException {
 
+
         List<String> allowedTypes = Arrays.stream(ITYPE.values()).map(ITYPE::getFormat).toList();
         if (!allowedTypes.contains(format.toLowerCase())) {
             return ResponseEntity.badRequest().body("Invalid format type");
+        }else{
+            format = ITYPE.fromFormat(format.toLowerCase()).getFormat();
         }
 
         try {
-            BufferedImage image = editService.retrieveImage(s3key);
+            InputStream image = editService.retrieveImageAsInputStream(s3key);
 
             byte[] imageBytes = editService.imageConversionToFormat(image,format);
             return ResponseEntity.ok().contentType(MediaType.valueOf(ITYPE.fromFormat(format).getMIME())).body(imageBytes);
@@ -48,12 +52,24 @@ public class EditController {
 
     @GetMapping("formatChange/ascii")
     public ResponseEntity<String> formatChangeASCII(
-            @RequestParam String s3key
+            @RequestParam String s3key,
+            @RequestParam(required = false) String MIME
     ){
         try{
             byte[] imageBytes = editService.retrieveImageAsBytes(s3key);
+            if(MIME == null){
+                return ResponseEntity.ok(editService.imageConversionToASCII(imageBytes));
 
-            return ResponseEntity.ok(editService.imageConversionToASCII(imageBytes));
+            }else {
+
+                List<String> allowedTypes = Arrays.stream(ITYPE.values()).map(ITYPE::getMIME).toList();
+                if (!allowedTypes.contains(MIME.toLowerCase())) {
+                    return ResponseEntity.badRequest().body("Invalid MIME type");
+                }
+
+                return ResponseEntity.ok(editService.imageConversionToASCII(imageBytes,MIME));
+            }
+
         } catch (IOException e) {
            return ResponseEntity.internalServerError().body(e.getMessage());
         }

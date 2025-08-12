@@ -8,19 +8,20 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.core.ResponseBytes;
 import software.amazon.awssdk.core.ResponseInputStream;
+import software.amazon.awssdk.core.sync.ResponseTransformer;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 
-import javax.imageio.IIOImage;
-import javax.imageio.ImageIO;
-import javax.imageio.ImageWriteParam;
-import javax.imageio.ImageWriter;
+import javax.imageio.*;
+import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.spi.ImageWriterSpi;
+import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Base64;
 import java.util.logging.Logger;
 
@@ -60,32 +61,37 @@ public class EditService {
 //    public String
 
 
-    public byte[] imageConversionToFormat (BufferedImage image , String format) throws IOException {
+    public byte[] imageConversionToFormat (InputStream inputStream , String format) throws IOException {
 
-//        ByteArrayOutputStream baos = new ByteArrayOutputStream( );
-//
-//        ImageIO.write(image,format,baos);
-//        return baos.toByteArray();
+        try {
+            if(format.equalsIgnoreCase(ITYPE.GIF.getFormat())){
+                return inputStreamToFormat(inputStream,format);
+            }else {
+                BufferedImage bufferedImage = ImageIO.read(inputStream);
+                return bufferedImageToFormat(bufferedImage,format);
+            }
+        } catch (IOException e) {
+            logger.warning(e.getMessage());
+            throw new IOException(e.getMessage());
+        }
+    }
 
+    public byte[] bufferedImageToFormat (BufferedImage image , String format) throws IOException {
 
         ImageWriter imageWriter = ImageIO.getImageWritersByFormatName(format).next();
 
         ImageWriteParam defaultParams = imageWriter.getDefaultWriteParam();
 
-        try(ByteArrayOutputStream baos = new ByteArrayOutputStream(image.getHeight()*image.getWidth()*5)){
-
-//            logger.info("Image size :" + (image.getHeight()*image.getWidth()*7));
-            ImageOutputStream IOS = ImageIO.createImageOutputStream(baos);
+        try(ByteArrayOutputStream baos = new ByteArrayOutputStream(image.getHeight()*image.getWidth()*5); ImageOutputStream IOS = ImageIO.createImageOutputStream(baos); ){
 
             imageWriter.setOutput(IOS);
 
             imageWriter.write(null,new IIOImage(image,null,null),defaultParams);
 
-            IOS.flush();
             return baos.toByteArray();
         }catch (IOException e){
             logger.warning(e.getMessage());
-            return null;
+            throw new IOException(e.getMessage());
         }finally {
             imageWriter.dispose();
         }
@@ -93,17 +99,62 @@ public class EditService {
 
     }
 
-//TODO make this return a html embedded ready response
-//    data:image/[image_format];base64,[Base64_encoded_string] like this
+    public byte[] inputStreamToFormat(InputStream inputStream , String format) throws IOException{
+
+        ImageReader reader = ImageIO.getImageReadersByFormatName(format).next();
+        try (ImageInputStream iis = ImageIO.createImageInputStream(inputStream)) {
+            reader.setInput(iis, false);
+
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ImageWriter imageWriter = ImageIO.getImageWritersByFormatName(format).next();
+
+            try (ImageOutputStream ios = ImageIO.createImageOutputStream(baos)) {
+                imageWriter.setOutput(ios);
+                imageWriter.prepareWriteSequence(null);
+
+                int numFrames = reader.getNumImages(true);
+                for (int i = 0; i < numFrames; i++) {
+                    BufferedImage frame = reader.read(i);
+                    IIOMetadata metadata = reader.getImageMetadata(i);
+                    imageWriter.writeToSequence(new IIOImage(frame, null, metadata), imageWriter.getDefaultWriteParam());
+                }
+
+                imageWriter.endWriteSequence();
+
+
+
+            } catch (IOException e) {
+                logger.warning(e.getMessage());
+                throw new IOException(e.getMessage());
+            }finally {
+                imageWriter.dispose();
+
+            }
+            return baos.toByteArray();
+        } finally {
+            reader.dispose();
+        }
+
+    }
+
     public String imageConversionToASCII (byte[] imageBytes ) throws IOException {
 
         return Base64.getEncoder().encodeToString(imageBytes);
 
     }
 
+    public String imageConversionToASCII (byte[] imageBytes , String MIME ) throws IOException {
+
+        String encodedImage = Base64.getEncoder().encodeToString(imageBytes);
+
+        return String.format("data:%s;base64,%s",MIME,encodedImage);
 
 
-    public BufferedImage retrieveImage (String s3Key) throws IOException {
+    }
+
+
+
+    public BufferedImage retrieveImageAsBufferedImage (String s3Key) throws IOException {
 
         try {
             String confirmedKey = imageRepository.findByS3KeyAndStatus(s3Key, STATUS.COMPLETED).orElseThrow(() -> new IOException("No image found for key: " + s3Key)).getS3Key();
@@ -121,8 +172,6 @@ public class EditService {
         }
         return null;
     }
-
-
 
     public byte[] retrieveImageAsBytes (String s3Key) throws IOException {
 
@@ -144,6 +193,27 @@ public class EditService {
         }
 
     }
+
+    public InputStream retrieveImageAsInputStream (String s3Key) throws IOException {
+
+        try {
+            String confirmedKey = imageRepository.findByS3KeyAndStatus(s3Key, STATUS.COMPLETED).orElseThrow(() -> new IOException("No image found for key: " + s3Key)).getS3Key();
+
+            GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+                    .bucket(bucket)
+                    .key(confirmedKey)
+                    .build();
+
+            return s3Client.getObject(getObjectRequest, ResponseTransformer.toInputStream());
+
+        }catch (IOException exception){
+            logger.warning(exception.getMessage());
+            throw new IOException("Error retrieving image from S3");
+        }
+
+    }
+
+
 
 
 }
