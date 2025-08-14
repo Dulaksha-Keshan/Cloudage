@@ -28,5 +28,9 @@ public class Image {
     @Enumerated(EnumType.STRING)
     private STATUS status;
 
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+
 
 }

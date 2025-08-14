@@ -23,7 +23,7 @@ public class S3Controller {
     private final S3UploadService s3UploadService;
     private final S3DownloadService s3DownloadService;
 
-    @GetMapping("upload-req/{fileName}")
+    @GetMapping("upload-req/{fileName}")//TODO add the user id or pass the user object to map them
     public ResponseEntity<String> getUploadUrl(
             @PathVariable("fileName") String fileName,
             @RequestParam String type,
