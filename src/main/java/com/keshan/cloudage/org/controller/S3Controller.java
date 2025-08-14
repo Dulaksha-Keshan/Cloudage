@@ -26,7 +26,8 @@ public class S3Controller {
     @GetMapping("upload-req/{fileName}")
     public ResponseEntity<String> getUploadUrl(
             @PathVariable("fileName") String fileName,
-            @RequestParam String type
+            @RequestParam String type,
+            @RequestParam int size
     ) {
 
         List<String> allowedTypes = Arrays.stream(ITYPE.values()).map(ITYPE::getMIME).toList();
@@ -36,7 +37,7 @@ public class S3Controller {
         }
 
         String objectKey = "images/" + UUID.randomUUID()+"_" + fileName;
-        URL uploadUrl = s3UploadService.generatePutObjectUrl(objectKey, fileName,type);
+        URL uploadUrl = s3UploadService.generatePutObjectUrl(objectKey, fileName,type,size);
 
 
         return ResponseEntity.ok(uploadUrl.toString());
@@ -49,7 +50,7 @@ public class S3Controller {
 
     @GetMapping("get-images")//TODO add path variable later
     public ResponseEntity<Map<String, String>> userS3Keys(
-            //TODO the path variable for the user id will go here later when users are create
+            //TODO the path variable for the user id will go here later when users are created
     ) {
         try {
             Map<String, String> linkList = s3DownloadService.userImageList();

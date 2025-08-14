@@ -20,9 +20,13 @@ public class Image {
 
     private String s3Key ;
 
-
     private String originalFormat;
 
+    @Column(name = "size_KB")
+    private  int size;
+
+    @Enumerated(EnumType.STRING)
     private STATUS status;
+
 
 }

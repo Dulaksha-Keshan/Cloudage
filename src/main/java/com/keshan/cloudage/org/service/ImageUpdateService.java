@@ -15,7 +15,7 @@ public class ImageUpdateService {
 
     private  final Logger logger = Logger.getLogger(ImageUpdateService.class.getName());
 
-    @Scheduled(fixedRate = 600000 )
+    @Scheduled(fixedRate = 60000)
     public void autoUpdate(){
         try{
             logger.info("Updating image status........");

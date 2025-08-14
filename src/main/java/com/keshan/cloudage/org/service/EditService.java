@@ -15,7 +15,6 @@ import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 
 import javax.imageio.*;
 import javax.imageio.metadata.IIOMetadata;
-import javax.imageio.spi.ImageWriterSpi;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
 import java.awt.image.BufferedImage;

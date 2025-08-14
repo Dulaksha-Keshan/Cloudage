@@ -45,7 +45,7 @@ public class S3UploadService {
         logger.info("Target S3 Bucket: " + this.bucket);
     }
 
-    public URL  generatePutObjectUrl (String objectKey , String fileName, String type){
+    public URL  generatePutObjectUrl (String objectKey , String fileName, String type,int size){
 
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                 .bucket(bucket)
@@ -64,6 +64,7 @@ public class S3UploadService {
             image.setStatus(STATUS.PENDING);
             image.setS3Key(objectKey);
             image.setOriginalFileName(fileName);
+            image.setSize((size/1000));
             image.setOriginalFormat(ITYPE.fromMIME(type).getFormat());
             imageRepository.save(image);
         }
