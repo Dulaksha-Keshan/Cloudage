@@ -1,10 +1,9 @@
-package com.keshan.cloudage.org.model;
+package com.keshan.cloudage.org.model.enums;
 
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 

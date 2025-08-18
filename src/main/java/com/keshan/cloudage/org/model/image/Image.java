@@ -1,6 +1,8 @@
-package com.keshan.cloudage.org.model;
+package com.keshan.cloudage.org.model.image;
 
 
+import com.keshan.cloudage.org.model.enums.STATUS;
+import com.keshan.cloudage.org.model.user.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;

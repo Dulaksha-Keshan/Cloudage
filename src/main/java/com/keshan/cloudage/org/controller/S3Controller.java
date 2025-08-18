@@ -1,7 +1,7 @@
 package com.keshan.cloudage.org.controller;
 
 
-import com.keshan.cloudage.org.model.ITYPE;
+import com.keshan.cloudage.org.model.enums.ITYPE;
 import com.keshan.cloudage.org.service.S3DownloadService;
 import com.keshan.cloudage.org.service.S3UploadService;
 import lombok.AllArgsConstructor;

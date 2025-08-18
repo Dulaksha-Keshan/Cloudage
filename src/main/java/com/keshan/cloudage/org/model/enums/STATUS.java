@@ -1,4 +1,4 @@
-package com.keshan.cloudage.org.model;
+package com.keshan.cloudage.org.model.enums;
 
 public enum STATUS {
     PENDING,

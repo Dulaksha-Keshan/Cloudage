@@ -1,14 +1,13 @@
 package com.keshan.cloudage.org.controller;
 
 
-import com.keshan.cloudage.org.model.ITYPE;
+import com.keshan.cloudage.org.model.enums.ITYPE;
 import com.keshan.cloudage.org.service.EditService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;

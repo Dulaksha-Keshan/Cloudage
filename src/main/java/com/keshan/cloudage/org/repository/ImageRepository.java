@@ -1,7 +1,7 @@
 package com.keshan.cloudage.org.repository;
 
-import com.keshan.cloudage.org.model.Image;
-import com.keshan.cloudage.org.model.STATUS;
+import com.keshan.cloudage.org.model.image.Image;
+import com.keshan.cloudage.org.model.enums.STATUS;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

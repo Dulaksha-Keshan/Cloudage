@@ -1,7 +1,7 @@
 package com.keshan.cloudage.org.service;
 
-import com.keshan.cloudage.org.model.Image;
-import com.keshan.cloudage.org.model.STATUS;
+import com.keshan.cloudage.org.model.image.Image;
+import com.keshan.cloudage.org.model.enums.STATUS;
 import com.keshan.cloudage.org.repository.ImageRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;

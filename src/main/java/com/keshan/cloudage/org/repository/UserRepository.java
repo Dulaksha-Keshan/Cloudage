@@ -1,7 +1,14 @@
 package com.keshan.cloudage.org.repository;
 
-import com.keshan.cloudage.org.model.User;
+import com.keshan.cloudage.org.model.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface UserRepository extends JpaRepository<User,Integer> {
+import java.util.Optional;
+
+public interface UserRepository extends JpaRepository<User,String> {
+
+    boolean existByEmailIgnoreCase(String email);
+
+    Optional<User>findByEmailIgnoreCase(String email);
+
 }
