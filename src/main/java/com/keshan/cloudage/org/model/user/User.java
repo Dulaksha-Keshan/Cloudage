@@ -28,7 +28,7 @@ public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private Integer id;
+    private String id;
 
     @Column(nullable = false)
     private String fullName;
