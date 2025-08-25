@@ -1,9 +1,12 @@
-package com.keshan.cloudage.org.model.user;
+package com.keshan.cloudage.org.service;
 
 import com.keshan.cloudage.org.common.CustomException;
 import com.keshan.cloudage.org.dto.UpdatePasswordReq;
 import com.keshan.cloudage.org.dto.UpdateProfileInfoReq;
 import com.keshan.cloudage.org.model.enums.CustomExceptionCode;
+import com.keshan.cloudage.org.model.user.User;
+import com.keshan.cloudage.org.model.user.UserMapper;
+import com.keshan.cloudage.org.model.user.UserService;
 import com.keshan.cloudage.org.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,7 +18,7 @@ import org.springframework.stereotype.Service;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class UserServiceImpl implements UserService{
+public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;

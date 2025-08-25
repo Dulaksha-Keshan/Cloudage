@@ -1,4 +1,4 @@
-package com.keshan.cloudage.org.service;
+package com.keshan.cloudage.org.jwt;
 
 import com.keshan.cloudage.org.util.KeyUtils;
 import io.jsonwebtoken.Claims;
@@ -65,7 +65,7 @@ public class JwtService {
         return extractClaims(token).getExpiration().before(new Date());
     }
 
-    private String getUserName(String token) {
+    public String getUserName(String token) {
         return extractClaims(token).getSubject();
     }
 

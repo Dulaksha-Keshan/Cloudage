@@ -45,7 +45,7 @@ public class UserController {
     @PatchMapping("/me/deactivate")
     @ResponseStatus(code = HttpStatus.NO_CONTENT)
     public void deactivateAccount(
-            Authentication principal
+           final  Authentication principal
     ){
         userService.deactivateAccount(getUserId(principal));
 
@@ -55,7 +55,7 @@ public class UserController {
     @PatchMapping("/me/reactivate")
     @ResponseStatus(code = HttpStatus.NO_CONTENT)
     public void reactivateAccount(
-            Authentication principal
+           final Authentication principal
     ){
         userService.reactivateAccount(getUserId(principal));
 
@@ -64,13 +64,14 @@ public class UserController {
     @DeleteMapping("/me")
     @ResponseStatus(code = HttpStatus.NO_CONTENT)
     public void deleteAccount(
-            Authentication principal
+           final Authentication principal
     ){
         userService.deleteAccount(getUserId(principal));
     }
 
 
-    private String getUserId(Authentication principal) {
+    private String getUserId(
+           final Authentication principal) {
         return ((User) principal.getPrincipal()).getId();
     }
 

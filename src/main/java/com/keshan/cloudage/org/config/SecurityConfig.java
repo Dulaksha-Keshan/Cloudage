@@ -21,6 +21,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtFilter jwtFilter;
+    private final String[] publicLinks = {"api/auth/login","api/auth/login","api/auth/refresh","api/auth/register"};
 
 
     @Bean
@@ -28,7 +29,7 @@ public class SecurityConfig {
         return http.
                 csrf(AbstractHttpConfigurer::disable).
                 authorizeHttpRequests(auth-> auth
-                        .requestMatchers("auth/**").permitAll()
+                        .requestMatchers(publicLinks).permitAll()
                         .anyRequest().authenticated()
                 )
                 .httpBasic(Customizer.withDefaults())
