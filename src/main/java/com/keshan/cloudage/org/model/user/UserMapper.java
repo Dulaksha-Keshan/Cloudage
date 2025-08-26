@@ -1,6 +1,7 @@
 package com.keshan.cloudage.org.model.user;
 
 
+import com.keshan.cloudage.org.auth.request.RegistrationRequest;
 import com.keshan.cloudage.org.dto.UpdateProfileInfoReq;
 import io.micrometer.common.util.StringUtils;
 
@@ -23,4 +24,15 @@ public class UserMapper {
         }
     }
 
+    public User toUser(RegistrationRequest request) {
+        return User.builder()
+                .fullName(request.getFullName())
+                .email(request.getEmail())
+                .password(request.getPassword())
+                .accountEnabled(true)
+                .credentialsExpired(false)
+                .accountExpired(false)
+                .accountLocked(false)
+                .build();
+    }
 }

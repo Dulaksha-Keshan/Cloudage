@@ -11,7 +11,8 @@ public enum CustomExceptionCode {
     PASSWORD_MISMATCH("Invalid password Confirmation" ,HttpStatus.BAD_REQUEST),
     PASSWORD_INCORRECT("Incorrect Current password" ,HttpStatus.BAD_REQUEST),
     ACCOUNT_ALREADY_ACTIVATED("Account already Activated" ,HttpStatus.BAD_REQUEST),
-    ACCOUNT_ALREADY_DEACTIVATED("Account already Deactivated" ,HttpStatus.BAD_REQUEST);
+    ACCOUNT_ALREADY_DEACTIVATED("Account already Deactivated" ,HttpStatus.BAD_REQUEST),
+    EMAIL_ALREADY_EXITS("Entered Email is already registered ", HttpStatus.BAD_REQUEST );
 
 
 
