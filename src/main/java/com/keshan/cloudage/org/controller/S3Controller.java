@@ -5,6 +5,7 @@ import com.keshan.cloudage.org.model.enums.ITYPE;
 import com.keshan.cloudage.org.service.S3DownloadService;
 import com.keshan.cloudage.org.service.S3UploadService;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,14 +17,14 @@ import java.util.UUID;
 
 @RestController()
 @RequestMapping("api/s3")
-@AllArgsConstructor
+@RequiredArgsConstructor
 @CrossOrigin(origins = "http://localhost:5173/")
 public class S3Controller {
 
     private final S3UploadService s3UploadService;
     private final S3DownloadService s3DownloadService;
 
-    @GetMapping("upload-req/{fileName}")//TODO add the user id or pass the user object to map them
+    @GetMapping("/upload-req/{fileName}")//TODO add the user id or pass the user object to map them
     public ResponseEntity<String> getUploadUrl(
             @PathVariable("fileName") String fileName,
             @RequestParam String type,
@@ -48,7 +49,7 @@ public class S3Controller {
 //
 //    }
 
-    @GetMapping("get-images")//TODO add path variable later
+    @GetMapping("/get-images")//TODO add path variable later
     public ResponseEntity<Map<String, String>> userS3Keys(
             //TODO the path variable for the user id will go here later when users are created
     ) {

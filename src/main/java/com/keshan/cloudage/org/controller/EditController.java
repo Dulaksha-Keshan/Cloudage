@@ -4,6 +4,7 @@ package com.keshan.cloudage.org.controller;
 import com.keshan.cloudage.org.model.enums.ITYPE;
 import com.keshan.cloudage.org.service.EditService;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,7 +16,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("api/edit")
-@AllArgsConstructor
+@RequiredArgsConstructor
 @CrossOrigin(origins = "http://localhost:5173/")
 public class EditController {
 
