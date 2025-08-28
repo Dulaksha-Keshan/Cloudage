@@ -3,11 +3,14 @@ package com.keshan.cloudage.org.controller;
 
 import com.keshan.cloudage.org.dto.UpdatePasswordReq;
 import com.keshan.cloudage.org.dto.UpdateProfileInfoReq;
+import com.keshan.cloudage.org.dto.UserResponse;
 import com.keshan.cloudage.org.model.user.User;
 import com.keshan.cloudage.org.model.user.UserService;
+import com.keshan.cloudage.org.service.UserServiceImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,7 +20,17 @@ import org.springframework.web.bind.annotation.*;
 @CrossOrigin(origins = "http://localhost:5173/")
 public class UserController {
 
-    final UserService userService;
+    final UserServiceImpl userService;
+
+    @GetMapping("/me")
+    public ResponseEntity<UserResponse> loadUserDetails(
+            final Authentication principal
+    ){
+        System.out.println("Reached");
+        UserResponse userRes = this.userService.getUserByEmail(getUserEmail(principal));
+        return ResponseEntity.status(HttpStatus.OK).body(userRes);
+
+    }
 
     @PostMapping("/me")
     @ResponseStatus(code = HttpStatus.NO_CONTENT)
@@ -74,6 +87,12 @@ public class UserController {
     private String getUserId(
            final Authentication principal) {
         return ((User) principal.getPrincipal()).getId();
+    }
+
+    private String getUserEmail(
+            final Authentication principal
+    ){
+        return ((User)principal.getPrincipal()).getEmail();
     }
 
 }

@@ -7,6 +7,7 @@ import java.security.KeyFactory;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 
 public class KeyUtils {
@@ -36,14 +37,14 @@ public class KeyUtils {
 
         final byte[] decode = Base64.getDecoder().decode(key);
 
-        final PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(decode);
+        final X509EncodedKeySpec spec = new X509EncodedKeySpec(decode);
 
         return KeyFactory.getInstance("RSA").generatePublic(spec);
 
     }
 
     private static String readKeyFromResource(String pemPath) throws IOException {
-        try (final InputStream in = KeyUtils.class.getResourceAsStream(pemPath)){
+        try (final InputStream in = KeyUtils.class.getClassLoader().getResourceAsStream(pemPath)){
             if(in == null){
                 throw new IllegalArgumentException("Could not find key in the given path " + pemPath);
             }

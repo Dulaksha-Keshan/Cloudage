@@ -3,6 +3,7 @@ package com.keshan.cloudage.org.service;
 import com.keshan.cloudage.org.common.CustomException;
 import com.keshan.cloudage.org.dto.UpdatePasswordReq;
 import com.keshan.cloudage.org.dto.UpdateProfileInfoReq;
+import com.keshan.cloudage.org.dto.UserResponse;
 import com.keshan.cloudage.org.model.enums.CustomExceptionCode;
 import com.keshan.cloudage.org.model.user.User;
 import com.keshan.cloudage.org.model.user.UserMapper;
@@ -93,5 +94,13 @@ public class UserServiceImpl implements UserService {
 
     }
 
+    public UserResponse getUserByEmail(String email){
+
+        User user = this.userRepository.findByEmailIgnoreCase(email)
+                .orElseThrow(() -> new  CustomException(CustomExceptionCode.USERNAME_NOT_FOUND,email));
+
+        return userMapper.toUserRes(user);
+
+    }
 
 }

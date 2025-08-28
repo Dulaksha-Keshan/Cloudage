@@ -17,7 +17,7 @@ public class RegistrationRequest {
     @Size(max = 50 , min = 5)
     @NotBlank(message = "Full name cannot be empty")
     private String fullName;
-    @NotBlank(message = "Full name cannot be empty")
+    @NotBlank(message = "Email name cannot be empty")
     @Email
     @Size(max = 50 , min = 5)
     @NonDisposableEmail

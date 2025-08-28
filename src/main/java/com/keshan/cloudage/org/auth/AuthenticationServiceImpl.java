@@ -10,6 +10,7 @@ import com.keshan.cloudage.org.model.enums.CustomExceptionCode;
 import com.keshan.cloudage.org.model.user.User;
 import com.keshan.cloudage.org.model.user.UserMapper;
 import com.keshan.cloudage.org.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -52,6 +53,7 @@ public class AuthenticationServiceImpl implements AuthenticationService{
     }
 
     @Override
+    @Transactional
     public void register(RegistrationRequest request) {
 
         checkEmail(request.getEmail());
@@ -89,7 +91,7 @@ public class AuthenticationServiceImpl implements AuthenticationService{
     }
 
     private void checkEmail(String email) {
-        final boolean emailExists = this.userRepository.existByEmailIgnoreCase(email);
+        final boolean emailExists = this.userRepository.existsByEmailIgnoreCase(email);
         if(emailExists){
             throw new CustomException(CustomExceptionCode.EMAIL_ALREADY_EXITS);
         }

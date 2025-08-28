@@ -2,6 +2,7 @@ package com.keshan.cloudage.org.config;
 
 
 import com.keshan.cloudage.org.jwt.JwtFilter;
+import com.keshan.cloudage.org.jwt.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,22 +13,21 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @EnableWebSecurity
-@RequiredArgsConstructor
 @Configuration
 public class SecurityConfig {
 
-    private final JwtFilter jwtFilter;
     private final String[] publicLinks = {"api/auth/login","api/auth/refresh","api/auth/register"};
 
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http ) throws Exception{
+    public SecurityFilterChain filterChain(HttpSecurity http , JwtFilter jwtFilter ) throws Exception{
         return http.
                 csrf(AbstractHttpConfigurer::disable).
                 authorizeHttpRequests(auth-> auth
@@ -36,7 +36,7 @@ public class SecurityConfig {
                 )
                 .httpBasic(Customizer.withDefaults())
                 .sessionManagement(session-> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterBefore(this.jwtFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 
@@ -49,6 +49,11 @@ public class SecurityConfig {
     @Bean
     public AuthenticationManager authenticationManager (AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
+    }
+
+    @Bean
+    public JwtFilter jwtFilter(UserDetailsService userDetailsService , JwtService jwtService){
+        return new JwtFilter(jwtService,userDetailsService);
     }
 
 }
