@@ -17,7 +17,7 @@ public class CustomException extends RuntimeException{
         this.args = args;
     }
 
-    private static String getFormattedMessage(final CustomExceptionCode code, final  Object... args) {
+    public static String getFormattedMessage(final CustomExceptionCode code, final  Object... args) {
         if(args!=null && args.length>0){
             return String.format(code.getErrorMessage(),args);
         }

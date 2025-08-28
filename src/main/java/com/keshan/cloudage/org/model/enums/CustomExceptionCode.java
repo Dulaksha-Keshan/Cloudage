@@ -12,7 +12,12 @@ public enum CustomExceptionCode {
     PASSWORD_INCORRECT("Incorrect Current password" ,HttpStatus.BAD_REQUEST),
     ACCOUNT_ALREADY_ACTIVATED("Account already Activated" ,HttpStatus.BAD_REQUEST),
     ACCOUNT_ALREADY_DEACTIVATED("Account already Deactivated" ,HttpStatus.BAD_REQUEST),
-    EMAIL_ALREADY_EXITS("Entered Email is already registered ", HttpStatus.BAD_REQUEST );
+    EMAIL_ALREADY_EXITS("Entered Email is already registered ", HttpStatus.BAD_REQUEST ),
+    BAD_CREDENTIALS("Invalid User Name or Password" ,HttpStatus.UNAUTHORIZED),
+    INTERNAL_SERVER_ERROR("Internal Server error has occurred",HttpStatus.INTERNAL_SERVER_ERROR),
+    UNAUTHORIZED_ACTION("No Authorization to perform this action ",HttpStatus.UNAUTHORIZED),
+    DISABLED_USER_ERROR("User account is disabled, please activate your account",HttpStatus.UNAUTHORIZED),
+    USERNAME_NOT_FOUND( "Cannot find user with the provided username", HttpStatus.NOT_FOUND);
 
 
 

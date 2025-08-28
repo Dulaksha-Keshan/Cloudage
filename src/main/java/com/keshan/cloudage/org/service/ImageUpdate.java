@@ -9,11 +9,12 @@ import java.util.logging.Logger;
 
 @Component
 @AllArgsConstructor
-public class ImageUpdateService {
+//TODO make this as entity listened class
+public class ImageUpdate {
 
     private S3UploadService s3UploadService;
 
-    private  final Logger logger = Logger.getLogger(ImageUpdateService.class.getName());
+    private  final Logger logger = Logger.getLogger(ImageUpdate.class.getName());
 
     @Scheduled(fixedRate = 60000)
     public void autoUpdate(){
