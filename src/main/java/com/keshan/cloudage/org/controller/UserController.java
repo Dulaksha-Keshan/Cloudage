@@ -5,7 +5,6 @@ import com.keshan.cloudage.org.dto.UpdatePasswordReq;
 import com.keshan.cloudage.org.dto.UpdateProfileInfoReq;
 import com.keshan.cloudage.org.dto.UserResponse;
 import com.keshan.cloudage.org.model.user.User;
-import com.keshan.cloudage.org.model.user.UserService;
 import com.keshan.cloudage.org.service.UserServiceImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

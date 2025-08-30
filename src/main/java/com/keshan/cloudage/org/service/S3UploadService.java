@@ -1,9 +1,13 @@
 package com.keshan.cloudage.org.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.keshan.cloudage.org.model.enums.ITYPE;
 import com.keshan.cloudage.org.model.image.Image;
 import com.keshan.cloudage.org.model.enums.STATUS;
 import com.keshan.cloudage.org.repository.ImageRepository;
+import io.awspring.cloud.sqs.annotation.SqsListener;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -25,6 +29,7 @@ public class S3UploadService {
     private final ImageRepository imageRepository;
     private final S3Client s3Client;
     private final Logger logger = Logger.getLogger(S3UploadService.class.getName());
+    private final ObjectMapper objectMapper;
 
 
     public S3UploadService(
@@ -34,15 +39,16 @@ public class S3UploadService {
 
             ImageRepository imageRepository,
 
-            @Value("${aws-settings.s3-bucket}") String bucket
+            @Value("${aws-settings.s3-bucket}") String bucket ,
+
+            ObjectMapper objectMapper
     ) {
         this.s3Client = s3Client;
         this.presigner = presigner;
         this.imageRepository = imageRepository;
         this.bucket = bucket;
+        this.objectMapper = objectMapper;
 
-        logger.info("S3UploadService initialized successfully with auto-configured clients.");
-        logger.info("Target S3 Bucket: " + this.bucket);
     }
 
     public URL  generatePutObjectUrl (String objectKey , String fileName, String type,int size){
@@ -99,7 +105,6 @@ public class S3UploadService {
 
 
     public void updateUploadStatusAll(){
-
         try{
             imageRepository.findAllByStatus(STATUS.PENDING).parallelStream().forEach(
                     image -> {
@@ -109,8 +114,6 @@ public class S3UploadService {
                                 .build();
                         try{
                             s3Client.headObject(request);
-
-                            image.setStatus(STATUS.COMPLETED);
 
                         }catch (NoSuchKeyException ex){
                             image.setStatus(STATUS.FAILED);
@@ -123,11 +126,36 @@ public class S3UploadService {
             logger.warning(e.getMessage());
         }
 
-
     }
 
-    public void updateUploadStatus(String s3key){
+    @SqsListener("image-upload-queue")
+    public void updateUploadStatus(String msg) throws JsonProcessingException {
 
+        logger.info("Sqs Message : " + msg);
+
+        try {
+            JsonNode root = this.objectMapper.readTree(msg);
+
+            for(JsonNode record : root.get("Records")){
+
+                String eventName = record.get("eventName").asText();
+                if (!eventName.startsWith("ObjectCreated:")) {
+                    logger.info("Skipping non-upload event: " + eventName);
+                    continue;
+                }
+
+                String key = record.get("s3").get("object").get("key").asText();
+
+                imageRepository.findByS3Key(key).ifPresent(image -> {
+                    image.setStatus(STATUS.COMPLETED);
+                    imageRepository.save(image);
+                    logger.info("Upload confirmed for key :" + key);
+                });
+
+            }
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }
