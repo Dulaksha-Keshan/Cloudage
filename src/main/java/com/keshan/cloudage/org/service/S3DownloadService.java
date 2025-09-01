@@ -29,29 +29,29 @@ public class S3DownloadService {
         logger.info("Target S3 Bucket: " + this.bucket);
     }
 
-    //TODO have make this get and user id and return only that users images,then make sure to create a method in repo to get by user id and Optional
-    public List<String> userImagesLinkList(){
+//    //TODO have make this get and user id and return only that users images,then make sure to create a method in repo to get by user id and Optional
+//    public List<String> userImagesLinkList(){
+//
+//        logger.info("Fetching user Images Links........");
+//
+//        return Optional.ofNullable(imageRepository.findAllByStatus(STATUS.COMPLETED))
+//                .orElse(Collections.emptyList())
+//                .stream()
+//                .map(image -> "https://" + bucket + ".s3.amazonaws.com/" + image.getS3Key())
+//                .toList();
+//
+//
+//    }
 
-        logger.info("Fetching user Images Links........");
 
-        return Optional.ofNullable(imageRepository.findAllByStatus(STATUS.COMPLETED))
-                .orElse(Collections.emptyList())
-                .stream()
-                .map(image -> "https://" + bucket + ".s3.amazonaws.com/" + image.getS3Key())
-                .toList();
-
-
-    }
-//TODO consider using the type field for the image entity and use that for filename for download because rn original filename is with the extension
-//because the front end uploads the file with extension on the name  cause not specified filetype fix it in the front end adding the field for object Image is useful for later conversions
-    public Map<String ,String> userImageList (){
+    public Map<String ,String> userImageList (String userId){
         logger.info("Fetching user Images Links........");
 
 //        List<Image> images = Optional.ofNullable(imageRepository.findAllByStatus(STATUS.COMPLETED))
 //                .orElse(Collections.emptyList());
 //
 //        return  images.stream().collect(Collectors.toMap((UUID.randomUUID().toString() + Image::getOriginalFileName) , Image::getS3Key));
-        return Optional.ofNullable(imageRepository.findAllByStatus(STATUS.COMPLETED))
+        return Optional.ofNullable(imageRepository.findAllByStatusAndUserId(STATUS.COMPLETED,userId))
                 .orElse(Collections.emptyList())
                 .stream()
                 .collect(Collectors

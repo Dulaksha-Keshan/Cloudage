@@ -25,7 +25,6 @@ public class UserController {
     public ResponseEntity<UserResponse> loadUserDetails(
             final Authentication principal
     ){
-        System.out.println("Reached");
         UserResponse userRes = this.userService.getUserByEmail(getUserEmail(principal));
         return ResponseEntity.status(HttpStatus.OK).body(userRes);
 

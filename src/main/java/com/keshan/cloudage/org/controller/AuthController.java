@@ -6,6 +6,7 @@ import com.keshan.cloudage.org.auth.request.AuthenticationRequest;
 import com.keshan.cloudage.org.auth.request.RefreshRequest;
 import com.keshan.cloudage.org.auth.request.RegistrationRequest;
 import com.keshan.cloudage.org.auth.response.AuthenticationResponse;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -25,10 +26,13 @@ public class AuthController {
     public ResponseEntity<AuthenticationResponse>login(
             @Valid
             @RequestBody
-            final AuthenticationRequest  req
+            final AuthenticationRequest  req,
+            HttpServletResponse res
             ){
 
-        return ResponseEntity.ok(this.authenticationService.login(req));
+        AuthenticationResponse authRes = this.authenticationService.login(req,res);
+
+        return ResponseEntity.ok(authRes);
 
     }
 
@@ -46,10 +50,13 @@ public class AuthController {
 
     @PostMapping("/refresh")
     public ResponseEntity<AuthenticationResponse>refresh(
-            @Valid
-            @RequestBody
-            final RefreshRequest req
+            @CookieValue(name = "refreshToken",required = false)
+            final String refreshToken
     ){
+        final RefreshRequest req = RefreshRequest.builder()
+                .refreshToken(refreshToken)
+                .build();
+
         return ResponseEntity.ok(this.authenticationService.refreshToken(req));
     }
 

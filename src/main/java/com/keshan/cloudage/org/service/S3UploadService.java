@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.keshan.cloudage.org.model.enums.ITYPE;
 import com.keshan.cloudage.org.model.image.Image;
 import com.keshan.cloudage.org.model.enums.STATUS;
+import com.keshan.cloudage.org.model.user.User;
 import com.keshan.cloudage.org.repository.ImageRepository;
 import io.awspring.cloud.sqs.annotation.SqsListener;
 import org.springframework.beans.factory.annotation.Value;
@@ -51,7 +52,7 @@ public class S3UploadService {
 
     }
 
-    public URL  generatePutObjectUrl (String objectKey , String fileName, String type,int size){
+    public URL  generatePutObjectUrl (String objectKey , String fileName, String type, int size, User user){
 
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                 .bucket(bucket)
@@ -72,6 +73,7 @@ public class S3UploadService {
             image.setOriginalFileName(fileName);
             image.setSize((size/1000));
             image.setOriginalFormat(ITYPE.fromMIME(type).getFormat());
+            image.setUser(user);
             imageRepository.save(image);
         }
 
@@ -133,11 +135,50 @@ public class S3UploadService {
 
         logger.info("Sqs Message : " + msg);
 
+
+//        try {
+//            JsonNode root = this.objectMapper.readTree(msg);
+//
+//            if (root.has("Event") && "s3:TestEvent".equals(root.get("Event").asText())) {
+//                logger.info("Skipping S3 test event");
+//                return;
+//            }
+//
+//            if(root != null){
+//                for(JsonNode record : root.get("Records")){
+//
+//                    String eventName = record.get("eventName").asText();
+//                    if (!eventName.startsWith("ObjectCreated:")) {
+//                        logger.info("Skipping non-upload event: " + eventName);
+//                        continue;
+//                    }
+//
+//                    String key = record.get("s3").get("object").get("key").asText();
+//
+//                    imageRepository.findByS3Key(key).ifPresent(image -> {
+//                        image.setStatus(STATUS.COMPLETED);
+//                        imageRepository.save(image);
+//                        logger.info("Upload confirmed for key :" + key);
+//                    });
+//            }
+//
+//            }
         try {
             JsonNode root = this.objectMapper.readTree(msg);
 
-            for(JsonNode record : root.get("Records")){
+            // Skip test event
+            if (root.has("Event") && "s3:TestEvent".equals(root.get("Event").asText())) {
+                logger.info("Skipping S3 test event");
+                return;
+            }
 
+            // Ensure "Records" exists and is an array
+            if (!root.has("Records") || !root.get("Records").isArray()) {
+                logger.info("Skipping message without Records array");
+                return;
+            }
+
+            for (JsonNode record : root.get("Records")) {
                 String eventName = record.get("eventName").asText();
                 if (!eventName.startsWith("ObjectCreated:")) {
                     logger.info("Skipping non-upload event: " + eventName);
@@ -149,11 +190,10 @@ public class S3UploadService {
                 imageRepository.findByS3Key(key).ifPresent(image -> {
                     image.setStatus(STATUS.COMPLETED);
                     imageRepository.save(image);
-                    logger.info("Upload confirmed for key :" + key);
+                    logger.info("Upload confirmed for key: " + key);
                 });
-
             }
-        } catch (JsonProcessingException e) {
+        }catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
     }

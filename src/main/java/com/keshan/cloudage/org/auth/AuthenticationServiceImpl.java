@@ -10,9 +10,12 @@ import com.keshan.cloudage.org.model.enums.CustomExceptionCode;
 import com.keshan.cloudage.org.model.user.User;
 import com.keshan.cloudage.org.model.user.UserMapper;
 import com.keshan.cloudage.org.repository.UserRepository;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -31,7 +34,7 @@ public class AuthenticationServiceImpl implements AuthenticationService{
 
 
     @Override
-    public AuthenticationResponse login(AuthenticationRequest request) {
+    public AuthenticationResponse login(AuthenticationRequest request , HttpServletResponse response) {
 
         final Authentication auth = this.authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
@@ -45,9 +48,16 @@ public class AuthenticationServiceImpl implements AuthenticationService{
         final String refreshToken = this.jwtService.generateRefreshToken(user.getUsername());
         final String tokenType = "Bearer ";
 
+        ResponseCookie cookie =ResponseCookie.from("refreshToken",refreshToken)
+                .httpOnly(true)
+                .path("api/auth/refresh")
+                .sameSite("None")
+                .maxAge(24*60*60)
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
         return AuthenticationResponse.builder()
                 .accessToken(token)
-                .refreshToken(refreshToken)
                 .tokenType(tokenType)
                 .build();
     }
@@ -76,7 +86,6 @@ public class AuthenticationServiceImpl implements AuthenticationService{
 
         return AuthenticationResponse.builder()
                 .accessToken(newAccessToken)
-                .refreshToken(request.getRefreshToken())
                 .tokenType(tokenType)
                 .build();
     }
