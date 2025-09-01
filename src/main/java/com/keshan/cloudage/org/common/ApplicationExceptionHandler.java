@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.FieldError;
@@ -67,6 +68,16 @@ public class ApplicationExceptionHandler {
 
     @ExceptionHandler(UsernameNotFoundException.class)
     public ResponseEntity<ErrorRes>errorHandler(final UsernameNotFoundException exception){
+
+        final ErrorRes error = ErrorRes.builder()
+                .msg(CustomExceptionCode.USERNAME_NOT_FOUND.getErrorMessage())
+                .code(CustomExceptionCode.USERNAME_NOT_FOUND.getHttpStatus())
+                .build();
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    }
+
+    @ExceptionHandler(InternalAuthenticationServiceException.class)
+    public ResponseEntity<ErrorRes>errorHandler(final InternalAuthenticationServiceException exception){
 
         final ErrorRes error = ErrorRes.builder()
                 .msg(CustomExceptionCode.USERNAME_NOT_FOUND.getErrorMessage())
