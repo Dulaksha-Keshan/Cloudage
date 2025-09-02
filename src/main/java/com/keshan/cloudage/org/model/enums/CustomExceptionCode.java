@@ -17,6 +17,10 @@ public enum CustomExceptionCode {
     INTERNAL_SERVER_ERROR("Internal Server error has occurred",HttpStatus.INTERNAL_SERVER_ERROR),
     UNAUTHORIZED_ACTION("No Authorization to perform this action ",HttpStatus.UNAUTHORIZED),
     DISABLED_USER_ERROR("User account is disabled, please activate your account",HttpStatus.UNAUTHORIZED),
+    IMAGE_NOT_FOUND("Image Not found on key  %s",HttpStatus.NOT_FOUND),
+    INVALID_MIME_TYPE("Invalid file format Type %s ", HttpStatus.BAD_REQUEST ),
+    INTERNAL_S3_ERROR("Internal exception with S3 service",HttpStatus.SERVICE_UNAVAILABLE),
+    INTERNAL_SERVICE_IO_ERROR("Internal IO exception on edit service",HttpStatus.SERVICE_UNAVAILABLE),
     USERNAME_NOT_FOUND( "Cannot find user with the provided username", HttpStatus.NOT_FOUND);
 
 

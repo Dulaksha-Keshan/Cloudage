@@ -1,6 +1,8 @@
 package com.keshan.cloudage.org.service;
 
 
+import com.keshan.cloudage.org.common.CustomException;
+import com.keshan.cloudage.org.model.enums.CustomExceptionCode;
 import com.keshan.cloudage.org.model.enums.ITYPE;
 import com.keshan.cloudage.org.model.enums.STATUS;
 import com.keshan.cloudage.org.repository.ImageRepository;
@@ -41,23 +43,10 @@ public class EditService {
         this.bucket = bucket;
         this.imageRepository = imageRepository;
 
-        logger.info("EditService  initialized successfully with auto-configured clients.");
-        logger.info("Target S3 Bucket: " + this.bucket);
+//        logger.info("EditService  initialized successfully with auto-configured clients.");
+//        logger.info("Target S3 Bucket: " + this.bucket);
     }
 
-
-//    public byte[] applyFilter(MultipartFile imageFile , String encode) throws IOException {
-//
-//        BufferedImage bufferedImage = ImageIO.read(imageFile.getInputStream());
-//
-//
-//
-//
-//
-//    }
-//
-//
-//    public String
 
 
     public byte[] imageConversionToFormat (InputStream inputStream , String format) throws IOException {
@@ -70,7 +59,6 @@ public class EditService {
                 return bufferedImageToFormat(bufferedImage,format);
             }
         } catch (IOException e) {
-            logger.warning(e.getMessage());
             throw new IOException(e.getMessage());
         }
     }
@@ -89,7 +77,6 @@ public class EditService {
 
             return baos.toByteArray();
         }catch (IOException e){
-            logger.warning(e.getMessage());
             throw new IOException(e.getMessage());
         }finally {
             imageWriter.dispose();
@@ -123,7 +110,6 @@ public class EditService {
 
 
             } catch (IOException e) {
-                logger.warning(e.getMessage());
                 throw new IOException(e.getMessage());
             }finally {
                 imageWriter.dispose();
@@ -142,6 +128,7 @@ public class EditService {
 
     }
 
+    // when you directly want to use the string base image on the front end
     public String imageConversionToASCII (byte[] imageBytes , String MIME ) throws IOException {
 
         String encodedImage = Base64.getEncoder().encodeToString(imageBytes);
@@ -156,7 +143,9 @@ public class EditService {
     public BufferedImage retrieveImageAsBufferedImage (String s3Key) throws IOException {
 
         try {
-            String confirmedKey = imageRepository.findByS3KeyAndStatus(s3Key, STATUS.COMPLETED).orElseThrow(() -> new IOException("No image found for key: " + s3Key)).getS3Key();
+            String confirmedKey = imageRepository.findByS3KeyAndStatus(s3Key, STATUS.COMPLETED)
+                    .orElseThrow(() -> new CustomException(CustomExceptionCode.IMAGE_NOT_FOUND, s3Key))
+                    .getS3Key();
 
             GetObjectRequest getObjectRequest = GetObjectRequest.builder()
                     .bucket(bucket)
@@ -167,48 +156,37 @@ public class EditService {
                 return ImageIO.read(s3image);
             }
         }catch (IOException exception){
-            logger.warning(exception.getMessage());
+            throw new IOException(exception.getMessage());
         }
-        return null;
     }
 
     public byte[] retrieveImageAsBytes (String s3Key) throws IOException {
+        String confirmedKey = imageRepository.findByS3KeyAndStatus(s3Key, STATUS.COMPLETED).
+                orElseThrow(() -> new CustomException(CustomExceptionCode.IMAGE_NOT_FOUND, s3Key))
+                .getS3Key();
 
-        try {
-            String confirmedKey = imageRepository.findByS3KeyAndStatus(s3Key, STATUS.COMPLETED).orElseThrow(() -> new IOException("No image found for key: " + s3Key)).getS3Key();
-
-            GetObjectRequest getObjectRequest = GetObjectRequest.builder()
-                    .bucket(bucket)
-                    .key(confirmedKey)
-                    .build();
+        GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+                .bucket(bucket)
+                .key(confirmedKey)
+                .build();
 
 
-            ResponseBytes<GetObjectResponse> s3imageBytes = s3Client.getObjectAsBytes(getObjectRequest);
-            return s3imageBytes.asByteArray();
-
-        }catch (IOException exception){
-            logger.warning(exception.getMessage());
-            throw new IOException("Error retrieving image from S3");
-        }
+        ResponseBytes<GetObjectResponse> s3imageBytes = s3Client.getObjectAsBytes(getObjectRequest);
+        return s3imageBytes.asByteArray();
 
     }
 
-    public InputStream retrieveImageAsInputStream (String s3Key) throws IOException {
+    public InputStream retrieveImageAsInputStream (String s3Key) {
+        String confirmedKey = imageRepository.findByS3KeyAndStatus(s3Key, STATUS.COMPLETED)
+                .orElseThrow(() -> new CustomException(CustomExceptionCode.IMAGE_NOT_FOUND, s3Key))
+                .getS3Key();
 
-        try {
-            String confirmedKey = imageRepository.findByS3KeyAndStatus(s3Key, STATUS.COMPLETED).orElseThrow(() -> new IOException("No image found for key: " + s3Key)).getS3Key();
+        GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+                .bucket(bucket)
+                .key(confirmedKey)
+                .build();
 
-            GetObjectRequest getObjectRequest = GetObjectRequest.builder()
-                    .bucket(bucket)
-                    .key(confirmedKey)
-                    .build();
-
-            return s3Client.getObject(getObjectRequest, ResponseTransformer.toInputStream());
-
-        }catch (IOException exception){
-            logger.warning(exception.getMessage());
-            throw new IOException("Error retrieving image from S3");
-        }
+        return s3Client.getObject(getObjectRequest, ResponseTransformer.toInputStream());
 
     }
 

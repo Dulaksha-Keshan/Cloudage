@@ -25,7 +25,7 @@ public class S3Controller {
     private final S3UploadService s3UploadService;
     private final S3DownloadService s3DownloadService;
 
-    @GetMapping("/upload-req/{fileName}")//TODO add the user id or pass the user object to map them
+    @GetMapping("/upload-req/{fileName}")
     public ResponseEntity<String> getUploadUrl(
             final Authentication principal,
             @PathVariable("fileName") String fileName,
@@ -38,30 +38,18 @@ public class S3Controller {
         if (!allowedTypes.contains(type)) {
             return ResponseEntity.badRequest().body("Invalid file type");
         }
-
         String objectKey = "images/" + UUID.randomUUID()+"_" + fileName;
         URL uploadUrl = s3UploadService.generatePutObjectUrl(objectKey, fileName,type,size,(User)principal.getPrincipal());
-
-
         return ResponseEntity.ok(uploadUrl.toString());
     }
 
-//    @PostMapping("upload-confirm")
-//    public ResponseEntity<Optional<Image>> confirmUpload(){
-//
-//    }
 
     @GetMapping("/get-images")
     public ResponseEntity<Map<String, String>> userS3Keys(
            final Authentication principal
     ) {
-        try {
             Map<String, String> linkList = s3DownloadService.userImageList( getUserId(principal));
             return ResponseEntity.ok(linkList);
-        } catch (Exception e) {
-
-            return ResponseEntity.internalServerError().build();
-        }
     }
 
 
@@ -71,5 +59,4 @@ public class S3Controller {
     }
 
 
-//    @GetMapping("u")
 }

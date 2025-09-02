@@ -62,7 +62,7 @@ public class S3UploadService {
 
 
         PutObjectPresignRequest putObjectPresignRequest = PutObjectPresignRequest.builder()
-                .signatureDuration(Duration.ofMinutes(10))
+                .signatureDuration(Duration.ofMinutes(20))
                 .putObjectRequest(putObjectRequest)
                 .build();
 
@@ -80,29 +80,6 @@ public class S3UploadService {
         return presigner.presignPutObject(putObjectPresignRequest).url();
 
     }
-
-//    public boolean updateUploadStatus(String objectKey){
-//
-//        HeadObjectRequest request = HeadObjectRequest.builder()
-//                .bucket(bucket)
-//                .key(objectKey)
-//                .build();
-//
-//        try {
-//            s3Client.headObject(request);
-//            return imageRepository.findByS3Key(objectKey).map(image -> {
-//                image.setStatus(STATUS.COMPLETED);
-//                imageRepository.save(image);
-//                return true;
-//            }).orElse(false);
-//
-//        }catch (S3Exception exception){
-//            logger.warning("S3 object not found or error: " + exception.awsErrorDetails().errorMessage());
-//            return false;
-//        }
-//
-//    }// this is for the upload checker on the same upload controller frontend has to send a request to upload after success
-//    //have to figure out how to pass the object since the object key is not being passed to the front end maybe use a json with few key values for the url,s3Key
 
 
 

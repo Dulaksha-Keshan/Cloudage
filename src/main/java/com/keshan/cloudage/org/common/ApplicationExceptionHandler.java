@@ -15,6 +15,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -104,6 +105,16 @@ public class ApplicationExceptionHandler {
                 .build();
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
+    @ExceptionHandler(IOException.class)
+    public ResponseEntity<ErrorRes>errorhandler(final IOException exception){
+        final ErrorRes error = ErrorRes.builder()
+                .code(CustomExceptionCode.INTERNAL_SERVICE_IO_ERROR.getHttpStatus())
+                .msg(CustomExceptionCode.INTERNAL_SERVICE_IO_ERROR.getErrorMessage())
+                .build();
+        log.error(exception.getMessage(),exception);
+        return ResponseEntity.status((HttpStatus.SERVICE_UNAVAILABLE)).body(error);
     }
 
 
