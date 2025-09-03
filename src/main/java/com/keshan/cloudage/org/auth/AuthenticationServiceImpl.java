@@ -50,7 +50,8 @@ public class AuthenticationServiceImpl implements AuthenticationService{
 
         ResponseCookie cookie =ResponseCookie.from("refreshToken",refreshToken)
                 .httpOnly(true)
-                .path("api/auth/refresh")
+                .secure(true)
+                .path("/api/auth/refresh")
                 .sameSite("None")
                 .maxAge(24*60*60)
                 .build();
