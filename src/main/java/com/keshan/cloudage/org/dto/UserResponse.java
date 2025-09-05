@@ -14,5 +14,6 @@ public class UserResponse {
     private String fullName;
     private String email;
     private LocalDate dateOfBirth;
-    private LocalDateTime createdAt;
+    private LocalDate createdAt;
+    private boolean activeAccount;
 }

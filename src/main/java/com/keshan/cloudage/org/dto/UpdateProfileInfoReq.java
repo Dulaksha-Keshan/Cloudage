@@ -12,7 +12,7 @@ import java.time.LocalDate;
 @Setter
 @Builder
 public class UpdateProfileInfoReq {
-    @Size(max = 50 , min = 5)
+    @Size(max = 50 , min = 6)
     @NotBlank(message = "Full name cannot be empty")
     private String fullName;
     private LocalDate dateOfBirth;

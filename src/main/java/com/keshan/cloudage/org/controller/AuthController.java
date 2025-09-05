@@ -52,6 +52,7 @@ public class AuthController {
             @CookieValue(name = "refreshToken" )
             final String refreshToken
     ){
+        @Valid
         final RefreshRequest req = RefreshRequest.builder()
                 .refreshToken(refreshToken)
                 .build();

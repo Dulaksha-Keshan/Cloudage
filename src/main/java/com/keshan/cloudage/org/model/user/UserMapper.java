@@ -47,7 +47,8 @@ public class UserMapper {
                 .fullName(user.getFullName())
                 .email(user.getEmail())
                 .dateOfBirth(user.getDateOfBirth() != null ? user.getDateOfBirth() : null)
-                .createdAt(user.getCreatedDate())
+                .createdAt(user.getCreatedDate().toLocalDate())
+                .activeAccount(user.isEnabled())
                 .build();
     }
 }

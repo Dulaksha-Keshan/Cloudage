@@ -19,6 +19,8 @@ import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
 
 import java.net.URL;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.logging.Logger;
 
@@ -40,7 +42,7 @@ public class S3UploadService {
 
             ImageRepository imageRepository,
 
-            @Value("${aws-settings.s3-bucket}") String bucket ,
+            @Value("${aws-settings.s3-bucket}") String bucket,
 
             ObjectMapper objectMapper
     ) {
@@ -52,7 +54,7 @@ public class S3UploadService {
 
     }
 
-    public URL  generatePutObjectUrl (String objectKey , String fileName, String type, int size, User user){
+    public URL generatePutObjectUrl(String objectKey, String fileName, String type, int size, User user) {
 
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                 .bucket(bucket)
@@ -71,7 +73,7 @@ public class S3UploadService {
             image.setStatus(STATUS.PENDING);
             image.setS3Key(objectKey);
             image.setOriginalFileName(fileName);
-            image.setSize((size/1000));
+            image.setSize((size / 1000));
             image.setOriginalFormat(ITYPE.fromMIME(type).getFormat());
             image.setUser(user);
             imageRepository.save(image);
@@ -82,26 +84,25 @@ public class S3UploadService {
     }
 
 
-
-    public void updateUploadStatusAll(){
-        try{
+    public void updateUploadStatusAll() {
+        try {
             imageRepository.findAllByStatus(STATUS.PENDING).parallelStream().forEach(
                     image -> {
                         HeadObjectRequest request = HeadObjectRequest.builder()
                                 .bucket(bucket)
                                 .key(image.getS3Key())
                                 .build();
-                        try{
+                        try {
                             s3Client.headObject(request);
 
-                        }catch (NoSuchKeyException ex){
+                        } catch (NoSuchKeyException ex) {
                             image.setStatus(STATUS.FAILED);
                             logger.warning("S3 object not found or error: " + ex.awsErrorDetails().errorMessage());
                         }
                         imageRepository.save(image);
                     }
             );
-        }catch (Exception e){
+        } catch (Exception e) {
             logger.warning(e.getMessage());
         }
 
@@ -112,34 +113,6 @@ public class S3UploadService {
 
         logger.info("Sqs Message : " + msg);
 
-
-//        try {
-//            JsonNode root = this.objectMapper.readTree(msg);
-//
-//            if (root.has("Event") && "s3:TestEvent".equals(root.get("Event").asText())) {
-//                logger.info("Skipping S3 test event");
-//                return;
-//            }
-//
-//            if(root != null){
-//                for(JsonNode record : root.get("Records")){
-//
-//                    String eventName = record.get("eventName").asText();
-//                    if (!eventName.startsWith("ObjectCreated:")) {
-//                        logger.info("Skipping non-upload event: " + eventName);
-//                        continue;
-//                    }
-//
-//                    String key = record.get("s3").get("object").get("key").asText();
-//
-//                    imageRepository.findByS3Key(key).ifPresent(image -> {
-//                        image.setStatus(STATUS.COMPLETED);
-//                        imageRepository.save(image);
-//                        logger.info("Upload confirmed for key :" + key);
-//                    });
-//            }
-//
-//            }
         try {
             JsonNode root = this.objectMapper.readTree(msg);
 
@@ -158,21 +131,26 @@ public class S3UploadService {
             for (JsonNode record : root.get("Records")) {
                 String eventName = record.get("eventName").asText();
                 if (!eventName.startsWith("ObjectCreated:")) {
-                    logger.info("Skipping non-upload event: " + eventName);
+                    logger.info("Skipping non-upload event: {} :" + eventName);
                     continue;
                 }
 
-                String key = record.get("s3").get("object").get("key").asText();
+                String rawKey = record.get("s3").get("object").get("key").asText();
+                String key = URLDecoder.decode(rawKey, StandardCharsets.UTF_8);
 
-                imageRepository.findByS3Key(key).ifPresent(image -> {
+                logger.info("Decoded S3 key from event: {}" + key);
+
+                imageRepository.findByS3Key(key).ifPresentOrElse(image -> {
                     image.setStatus(STATUS.COMPLETED);
                     imageRepository.save(image);
-                    logger.info("Upload confirmed for key: " + key);
+                    logger.info("Upload confirmed and status updated for key: {}" + key);
+                }, () -> {
+                    logger.warning("No image found in DB for decoded key: {}" + key);
                 });
             }
-        }catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Failed to parse SQS message", e);
         }
     }
-
 }
+
