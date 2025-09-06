@@ -28,7 +28,7 @@ import java.util.List;
 @Configuration
 public class SecurityConfig {
 
-    private final String[] publicLinks = {"api/auth/login","api/auth/refresh","api/auth/register"};
+    private final String[] publicLinks = {"api/auth/login","api/auth/refresh","api/auth/register","api/auth/reactivation"};
 
 
     @Bean
@@ -61,7 +61,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of("http://localhost:5173")); // frontend
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS","PATCH"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
 

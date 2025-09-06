@@ -60,4 +60,15 @@ public class AuthController {
         return ResponseEntity.ok(this.authenticationService.refreshToken(req));
     }
 
+    //TODO correct the end point
+    @PatchMapping("/reactivation")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void reactivation(
+            @RequestParam
+            final String email
+    ){
+        System.out.println(email);
+        this.authenticationService.accountReactivation(email);
+    }
+
 }

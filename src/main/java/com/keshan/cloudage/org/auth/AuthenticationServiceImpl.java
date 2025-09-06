@@ -21,6 +21,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 
 @Service
 @RequiredArgsConstructor
@@ -91,6 +93,17 @@ public class AuthenticationServiceImpl implements AuthenticationService{
                 .build();
     }
 
+    //TODO add method to get a email and reactivate accounts
+    public void accountReactivation(String email){
+
+        User user = userRepository.findByEmailIgnoreCase(email)
+                .orElseThrow(() -> new CustomException(CustomExceptionCode.USERNAME_NOT_FOUND));
+
+
+        user.setAccountEnabled(true);
+        userRepository.save(user);
+
+    }
 
     private void checkPassword(String password, String confirmPassword) {
 

@@ -13,4 +13,8 @@ public interface AuthenticationService {
     void register(RegistrationRequest request);
 
     AuthenticationResponse refreshToken(RefreshRequest request);
+
+
+    void accountReactivation(String email);
+
 }

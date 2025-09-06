@@ -24,7 +24,7 @@ public class UserMapper {
         }
 
         if ( req.getDateOfBirth() != null
-                && !req.getDateOfBirth().isEqual(savedUser.getDateOfBirth())
+                && (savedUser.getDateOfBirth() == null || !savedUser.getDateOfBirth().isEqual(req.getDateOfBirth()))
         ){
             savedUser.setDateOfBirth(req.getDateOfBirth());
         }
