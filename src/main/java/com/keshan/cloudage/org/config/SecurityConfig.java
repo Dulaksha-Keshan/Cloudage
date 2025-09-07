@@ -28,7 +28,7 @@ import java.util.List;
 @Configuration
 public class SecurityConfig {
 
-    private final String[] publicLinks = {"api/auth/login","api/auth/refresh","api/auth/register","api/auth/reactivation"};
+    private final String[] publicLinks = {"api/auth/login","api/auth/refresh","api/auth/register","api/auth/reactivation","api/auth/reactivate"};
 
 
     @Bean

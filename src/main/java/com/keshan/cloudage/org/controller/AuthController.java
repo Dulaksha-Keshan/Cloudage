@@ -3,6 +3,7 @@ package com.keshan.cloudage.org.controller;
 
 import com.keshan.cloudage.org.auth.AuthenticationService;
 import com.keshan.cloudage.org.auth.request.AuthenticationRequest;
+import com.keshan.cloudage.org.auth.request.ReactivationRequest;
 import com.keshan.cloudage.org.auth.request.RefreshRequest;
 import com.keshan.cloudage.org.auth.request.RegistrationRequest;
 import com.keshan.cloudage.org.auth.response.AuthenticationResponse;
@@ -60,15 +61,24 @@ public class AuthController {
         return ResponseEntity.ok(this.authenticationService.refreshToken(req));
     }
 
-    //TODO correct the end point
-    @PatchMapping("/reactivation")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void reactivation(
-            @RequestParam
-            final String email
+    @PatchMapping("/reactivate")
+    @ResponseStatus(HttpStatus.OK)
+    public void reactivateAccount(
+           final @RequestParam String token
     ){
-        System.out.println(email);
-        this.authenticationService.accountReactivation(email);
+        this.authenticationService.accountReactivation(token);
+    }
+
+
+    @PostMapping("/reactivation")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void reactivationRequest(
+            @RequestBody
+            @Valid
+            final ReactivationRequest req
+    ){
+
+        this.authenticationService.accountReactivationRequest(req);
     }
 
 }

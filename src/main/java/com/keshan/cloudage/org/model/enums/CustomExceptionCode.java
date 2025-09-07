@@ -21,6 +21,7 @@ public enum CustomExceptionCode {
     INVALID_MIME_TYPE("Invalid file format Type %s ", HttpStatus.BAD_REQUEST ),
     INTERNAL_S3_ERROR("Internal exception with S3 service",HttpStatus.SERVICE_UNAVAILABLE),
     INTERNAL_SERVICE_IO_ERROR("Internal IO exception on edit service",HttpStatus.SERVICE_UNAVAILABLE),
+    REACTIVATION_ERROR("Error while reactivation request email : %s",HttpStatus.INTERNAL_SERVER_ERROR),
     USERNAME_NOT_FOUND( "Cannot find user with the provided username", HttpStatus.NOT_FOUND);
 
 

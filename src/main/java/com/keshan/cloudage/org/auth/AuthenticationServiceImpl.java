@@ -1,11 +1,13 @@
 package com.keshan.cloudage.org.auth;
 
 import com.keshan.cloudage.org.auth.request.AuthenticationRequest;
+import com.keshan.cloudage.org.auth.request.ReactivationRequest;
 import com.keshan.cloudage.org.auth.request.RefreshRequest;
 import com.keshan.cloudage.org.auth.request.RegistrationRequest;
 import com.keshan.cloudage.org.auth.response.AuthenticationResponse;
 import com.keshan.cloudage.org.common.CustomException;
 import com.keshan.cloudage.org.jwt.JwtService;
+import com.keshan.cloudage.org.mail.EmailService;
 import com.keshan.cloudage.org.model.enums.CustomExceptionCode;
 import com.keshan.cloudage.org.model.user.User;
 import com.keshan.cloudage.org.model.user.UserMapper;
@@ -21,8 +23,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-
 
 @Service
 @RequiredArgsConstructor
@@ -33,6 +33,7 @@ public class AuthenticationServiceImpl implements AuthenticationService{
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final UserMapper userMapper;
+    private final EmailService emailService;
 
 
     @Override
@@ -93,15 +94,45 @@ public class AuthenticationServiceImpl implements AuthenticationService{
                 .build();
     }
 
-    //TODO add method to get a email and reactivate accounts
-    public void accountReactivation(String email){
+    @Override
+    public void accountReactivation(String token){
 
-        User user = userRepository.findByEmailIgnoreCase(email)
-                .orElseThrow(() -> new CustomException(CustomExceptionCode.USERNAME_NOT_FOUND));
+        String userName = this.jwtService.getUserName(token);
+
+        if(jwtService.isValidToken(token,userName)){
+            User user = userRepository.findByEmailIgnoreCase(userName)
+                    .orElseThrow(() -> new CustomException(CustomExceptionCode.USERNAME_NOT_FOUND));
 
 
-        user.setAccountEnabled(true);
-        userRepository.save(user);
+            user.setAccountEnabled(true);
+            userRepository.save(user);
+        }
+    }
+
+    @Override
+    public void accountReactivationRequest(ReactivationRequest req) {
+        final boolean userExists = userRepository.existsByEmailIgnoreCase(req.getEmail());
+
+        if(userExists){
+            try {
+                User user = userRepository.findByEmailIgnoreCase(req.getEmail())
+                        .orElseThrow(() -> new CustomException(CustomExceptionCode.INTERNAL_SERVER_ERROR));
+                if(user.isAccountEnabled()){ throw new CustomException(CustomExceptionCode.ACCOUNT_ALREADY_ACTIVATED);}
+                final String expirationToken  = this.jwtService.generateReactivationToken(user.getUsername());
+
+                this.emailService.sendReactivationEmail(user.getUsername(),createReactivationLink(expirationToken));
+
+            }catch (CustomException ex){
+                throw new CustomException(CustomExceptionCode.ACCOUNT_ALREADY_ACTIVATED);
+            }
+            catch (Exception e) {
+                throw new CustomException(CustomExceptionCode.REACTIVATION_ERROR,e.getMessage());
+            }
+
+        }else {
+            throw new CustomException(CustomExceptionCode.USER_NOT_FOUND,req.getEmail());
+        }
+
 
     }
 
@@ -118,6 +149,11 @@ public class AuthenticationServiceImpl implements AuthenticationService{
         if(emailExists){
             throw new CustomException(CustomExceptionCode.EMAIL_ALREADY_EXITS);
         }
+    }
+
+    private String createReactivationLink(String token ){
+        return "http://localhost:5173/reactivate?token="+token;
+//        return String.format("http://localhost:8080/api/auth/reactivate?userName=%s&token=%s",userName,token);
     }
 
 }

@@ -19,7 +19,8 @@ public class JwtService {
     private final PrivateKey privateKey;
 
     private final long accessExpiration = 20*60*1000;//20 mins
-    private final long refreshExpiration = 24*60*60*1000;// 24hrs
+    private final long refreshExpiration = 48*60*60*1000;// 24hrs
+    private final long reactivationExpiration = 12*60*60*1000;
 
 
     public JwtService() throws Exception {
@@ -98,4 +99,8 @@ public class JwtService {
         return generateAccessToken(userName);
     }
 
+    public String generateReactivationToken(String username) {
+        final Map<String,Object> claims = Map.of(TOKEN_TYPE,"REACTIVATION_TOKEN");
+        return buildToken(username,claims,reactivationExpiration);
+    }
 }
