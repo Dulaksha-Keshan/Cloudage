@@ -3,10 +3,11 @@ package com.keshan.cloudage.org.controller;
 
 import com.keshan.cloudage.org.model.enums.ITYPE;
 import com.keshan.cloudage.org.model.user.User;
-import com.keshan.cloudage.org.service.S3DownloadService;
-import com.keshan.cloudage.org.service.S3UploadService;
-import lombok.AllArgsConstructor;
+import com.keshan.cloudage.org.service.S3Service;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -22,8 +23,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class S3Controller {
 
-    private final S3UploadService s3UploadService;
-    private final S3DownloadService s3DownloadService;
+    private final S3Service s3Service;
 
     @GetMapping("/upload-req/{fileName}")
     public ResponseEntity<String> getUploadUrl(
@@ -39,7 +39,7 @@ public class S3Controller {
             return ResponseEntity.badRequest().body("Invalid file type");
         }
         String objectKey = "images/" + UUID.randomUUID()+"_" + fileName;
-        URL uploadUrl = s3UploadService.generatePutObjectUrl(objectKey, fileName,type,size,(User)principal.getPrincipal());
+        URL uploadUrl = s3Service.generatePutObjectUrl(objectKey, fileName,type,size,(User)principal.getPrincipal());
         return ResponseEntity.ok(uploadUrl.toString());
     }
 
@@ -48,8 +48,21 @@ public class S3Controller {
     public ResponseEntity<Map<String, String>> userS3Keys(
            final Authentication principal
     ) {
-            Map<String, String> linkList = s3DownloadService.userImageList( getUserId(principal));
+            Map<String, String> linkList = s3Service.userImageList( getUserId(principal));
             return ResponseEntity.ok(linkList);
+    }
+
+    @DeleteMapping("delete")
+    @ResponseStatus(HttpStatus.OK)
+    public void deleteS3Image(
+            final Authentication principal,
+            @RequestParam
+            @NotBlank
+            final String s3key
+    ){
+
+        this.s3Service.deleteImage(getUserId(principal),s3key);
+
     }
 
 

@@ -17,4 +17,6 @@ public interface ImageRepository extends JpaRepository<Image,String> {
     Optional<Image> findByS3KeyAndStatus(String s3Key, STATUS status);
 
     List<Image>findAllByStatusAndUserId(STATUS status , String userId);
+
+    Optional<Image>findByStatusAndS3KeyAndUserId(STATUS status,String s3Key , String userId);
 }

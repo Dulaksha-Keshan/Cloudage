@@ -3,15 +3,20 @@ package com.keshan.cloudage.org.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.keshan.cloudage.org.common.CustomException;
+import com.keshan.cloudage.org.model.enums.CustomExceptionCode;
 import com.keshan.cloudage.org.model.enums.ITYPE;
 import com.keshan.cloudage.org.model.image.Image;
 import com.keshan.cloudage.org.model.enums.STATUS;
 import com.keshan.cloudage.org.model.user.User;
 import com.keshan.cloudage.org.repository.ImageRepository;
 import io.awspring.cloud.sqs.annotation.SqsListener;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import software.amazon.awssdk.core.exception.SdkException;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
@@ -22,20 +27,24 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Optional;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 @Service
-public class S3UploadService {
+public class S3Service {
 
     private final S3Presigner presigner;
     private final String bucket;
     private final ImageRepository imageRepository;
     private final S3Client s3Client;
-    private final Logger logger = Logger.getLogger(S3UploadService.class.getName());
+    private final Logger logger = Logger.getLogger(S3Service.class.getName());
     private final ObjectMapper objectMapper;
 
 
-    public S3UploadService(
+    public S3Service(
             S3Client s3Client,
 
             S3Presigner presigner,
@@ -54,19 +63,25 @@ public class S3UploadService {
 
     }
 
+    @Transactional
     public URL generatePutObjectUrl(String objectKey, String fileName, String type, int size, User user) {
 
-        PutObjectRequest putObjectRequest = PutObjectRequest.builder()
-                .bucket(bucket)
-                .key(objectKey)
-                .contentType(type)
-                .build();
+        PutObjectPresignRequest putObjectPresignRequest = null;
+        try {
+            PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                    .bucket(bucket)
+                    .key(objectKey)
+                    .contentType(type)
+                    .build();
 
 
-        PutObjectPresignRequest putObjectPresignRequest = PutObjectPresignRequest.builder()
-                .signatureDuration(Duration.ofMinutes(20))
-                .putObjectRequest(putObjectRequest)
-                .build();
+            putObjectPresignRequest = PutObjectPresignRequest.builder()
+                    .signatureDuration(Duration.ofMinutes(20))
+                    .putObjectRequest(putObjectRequest)
+                    .build();
+        } catch (SdkException e) {
+            throw new CustomException(CustomExceptionCode.INTERNAL_S3_ERROR,e.getMessage());
+        }
 
         if (objectKey != null) {
             Image image = new Image();
@@ -84,6 +99,22 @@ public class S3UploadService {
     }
 
 
+    public Map<String ,String> userImageList (String userId){
+        logger.info("Fetching user Images Links........");
+
+        return Optional.ofNullable(imageRepository.findAllByStatusAndUserId(STATUS.COMPLETED,userId))
+                .orElse(Collections.emptyList())
+                .stream()
+                .collect(Collectors
+                        .toMap(Image::getS3Key, image -> "https://" + bucket + ".s3.amazonaws.com/" + image.getS3Key()));
+
+
+
+
+
+    }
+
+//TODO maybe consider this run once in while to change the pending status of images that didn't get upload through
     public void updateUploadStatusAll() {
         try {
             imageRepository.findAllByStatus(STATUS.PENDING).parallelStream().forEach(
@@ -108,8 +139,30 @@ public class S3UploadService {
 
     }
 
+    @Transactional
+    public void deleteImage(String userId, String s3key) {
+
+        final Image image = this.imageRepository.findByStatusAndS3KeyAndUserId(STATUS.COMPLETED,s3key,userId).orElseThrow(
+                ()-> new CustomException(CustomExceptionCode.IMAGE_NOT_FOUND,s3key)
+        );
+
+        try {
+            final  DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
+                    .bucket(bucket)
+                    .key(image.getS3Key())
+                    .build();
+
+            s3Client.deleteObject(deleteObjectRequest);
+        } catch (SdkException e) {
+            throw new CustomException(CustomExceptionCode.INTERNAL_S3_ERROR,e.getMessage());
+        }
+
+        this.imageRepository.deleteById(image.getId());
+
+    }
+
     @SqsListener("image-upload-queue")
-    public void updateUploadStatus(String msg) throws JsonProcessingException {
+    public void updateUploadStatus(String msg)  {
 
         logger.info("Sqs Message : " + msg);
 
@@ -144,13 +197,13 @@ public class S3UploadService {
                     image.setStatus(STATUS.COMPLETED);
                     imageRepository.save(image);
                     logger.info("Upload confirmed and status updated for key: {}" + key);
-                }, () -> {
-                    logger.warning("No image found in DB for decoded key: {}" + key);
-                });
+                }, () -> logger.warning("No image found in DB for decoded key: {}" + key));
             }
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Failed to parse SQS message", e);
         }
     }
+
+
 }
 
