@@ -9,6 +9,7 @@ import com.keshan.cloudage.org.model.user.User;
 import com.keshan.cloudage.org.model.user.UserMapper;
 import com.keshan.cloudage.org.model.user.UserService;
 import com.keshan.cloudage.org.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -90,8 +91,15 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public void deleteAccount(String userId) {
+        final boolean user = this.userRepository.existsById(userId);
 
+        if (user) {
+            this.userRepository.deleteById(userId);
+        }else{
+            throw  new CustomException(CustomExceptionCode.USER_NOT_FOUND_ON_ID,userId);
+        }
     }
 
     public UserResponse getUserByEmail(String email){
