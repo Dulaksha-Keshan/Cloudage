@@ -26,7 +26,7 @@ A Spring Boot application that provides secure cloud-based image storage with AW
 ## Project Structure
 
 ```
-src/main/java/com/keshan/cloudage/org/
+src/main/java/com/keshan.cloudage.org/
 ├── auth/              # Authentication services and DTOs
 ├── config/            # Security and application configuration
 ├── controller/        # REST API controllers
@@ -93,10 +93,10 @@ cloud:
     s3:
       bucket: ${S3_BUCKET_NAME}
 
-# JWT Configuration
-jwt:
-  secret: ${JWT_SECRET}
-  expiration: 86400000  # 24 hours
+#jwt public and private keys are under the resources for LOCAL TESTING ONLY
+src/main/java/resources/keys.loacl-only
+├── private_key.pem/             # private key
+├── public_key.pem/              # public key
 ```
 
 ### 3. Set up environment variables
@@ -126,7 +126,7 @@ mvn clean package
 java -jar target/cloudage.org-0.0.1-SNAPSHOT.war
 ```
 
-The application will start on `http://localhost:8080`
+The application will start on `http://localhost:8090`
 
 ## API Documentation
 
@@ -190,7 +190,8 @@ Content-Type: application/json
 
 {
   "currentPassword": "oldPassword",
-  "newPassword": "newSecurePassword"
+  "newPassword": "newSecurePassword",
+  "confirmPassword" : "newConfirmPassword"
 }
 ```
 
@@ -324,9 +325,6 @@ mvn clean package -Pexternal-tomcat
 4. Push to the branch (`git push origin feature/new-feature`)
 5. Create a Pull Request
 
-## License
-
-This project is licensed under the MIT License.
 
 ## Author
 
@@ -335,4 +333,4 @@ This project is licensed under the MIT License.
 
 ---
 
-*A modern cloud image storage solution built with Spring Boot and AWS*
+*A cloud image storage solution built with Spring Boot and AWS*
