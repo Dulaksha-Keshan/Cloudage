@@ -234,8 +234,7 @@ Authorization: Bearer {jwt_token}
 - **PNG** (.png)
 - **WebP** (.webp)
 - **GIF** (.gif)
-- **BMP** (.bmp)
-- **TIFF** (.tiff, .tif)
+
 
 ## Security Features
 
