@@ -119,7 +119,9 @@ export MAIL_PASSWORD=your-email-password
 
 ```bash
 # Development mode
-mvn spring-boot:run
+./mvnw clean install #to install dependencies 
+
+./mvnw spring-boot:run
 
 # Or build and run
 mvn clean package
