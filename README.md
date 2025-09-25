@@ -45,7 +45,7 @@ src/main/java/com/keshan.cloudage.org/
 ## Prerequisites
 
 - Java 21
-- Maven 3.8+
+- Maven 3.8+ # not compulsory wrapper is available 
 - PostgreSQL database
 - AWS account with S3 and SQS access
 
@@ -119,12 +119,13 @@ export MAIL_PASSWORD=your-email-password
 
 ```bash
 # Development mode
+# mvn wrapper commands 
 ./mvnw clean install #to install dependencies 
 
 ./mvnw spring-boot:run
 
 # Or build and run
-mvn clean package
+./mvnw clean package
 java -jar target/cloudage.org-0.0.1-SNAPSHOT.war
 ```
 
