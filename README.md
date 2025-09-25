@@ -6,7 +6,7 @@ A Spring Boot application that provides secure cloud-based image storage with AW
 
 - 🔐 **JWT Authentication** - Secure user registration, login, and session management
 - ☁️ **AWS S3 Storage** - Reliable cloud storage with presigned URL uploads
-- 🖼️ **Image Format Support** - JPEG, PNG, WebP, GIF, BMP, and TIFF formats
+- 🖼️ **Image Format Support** - JPEG, PNG, WebP, GIF formats
 - 👤 **User Management** - Profile management, password updates, account deactivation
 - 🔄 **Async Processing** - AWS SQS integration for background tasks
 - 📧 **Email Integration** - Account activation and notifications
